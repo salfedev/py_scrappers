@@ -7,19 +7,19 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from pprint import pprint
 from simple_chalk import chalk, green, red, yellow, blue, bold, underline
 from sys import argv
-# for arg in argv:
-#     print('arg :' + arg)
 
-postcode = argv[1]
-
+timeout = 5
 options = Options()
 # options.headless = True is deprecated!
-options.add_argument('--headless')
-# options.add_experimental_option("detach", True)
+# options.add_argument('--headless')
+options.add_experimental_option("detach", True)
 url = "https://gridreferencefinder.com/"
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
@@ -32,9 +32,16 @@ driver.get(url)
 def get_grid_reference(postcode, row_counter, driver):
     # sending keys to the input
     post_code_input = driver.find_element(By.ID, "txtPostcode")
+    post_code_input.clear()
     post_code_input.send_keys(postcode)
     driver.find_element(By.ID, "find1").click()
+
     data_table = driver.find_element(By.ID, "tbl")
+    try:
+        element_present = EC.presence_of_element_located((By.ID, f"row{row_counter}"))
+        WebDriverWait(driver, timeout).until(element_present)
+    except TimeoutException:
+        print("Timed out waiting for page to load")
     grid_row = data_table.find_element(By.ID, f"row{row_counter}")
     grid_input_value = grid_row.find_element(By.TAG_NAME, "input")
     print(yellow.bold('----------------------------------'))
