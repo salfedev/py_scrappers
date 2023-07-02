@@ -42,7 +42,7 @@ driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install())
 driver.get(url)
 
 
-async def get_grid_reference(postcode, row_counter, driver):
+async def get_grid_reference(postcode, row_counter, driver=driver):
     # sending keys to the input
     post_code_input = driver.find_element(By.ID, "txtPostcode")
     post_code_input.clear()
@@ -57,12 +57,9 @@ async def get_grid_reference(postcode, row_counter, driver):
         grid_input_value = grid_row.find_element(By.TAG_NAME, "input").get_attribute("value")
     except TimeoutException:
         grid_input_value = "No data found for this postcode"
-        # print("Timed out waiting for page to load")
-    # except Exception as e:
-    #     print(e)    
-    # finally
     print('Grid Reference: ' + red.bold(grid_input_value))
     print(yellow.bold('----------------------------------'))
+    return grid_input_value
     
 
 
@@ -74,4 +71,4 @@ for arg in argv:
         asyncio.run(get_grid_reference(arg, row_counter, driver))
         row_counter += 1
 
-print(green.bold("Done!"))
+# print(green.bold("Done!"))
