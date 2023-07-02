@@ -18,8 +18,21 @@ from sys import argv
 timeout = 5
 options = Options()
 # options.headless = True is deprecated!
-# options.add_argument('--headless')
-options.add_experimental_option("detach", True)
+options.add_argument('--headless')
+# don't close the browser after the script is done
+# options.add_experimental_option("detach", True)
+
+# disable images, css, js, etc.
+prefs = {'profile.default_content_setting_values': {'cookies': 2, 'images': 2, 'javascript': 2, 
+                            'plugins': 2, 'popups': 2, 'geolocation': 2, 
+                            'notifications': 2, 'auto_select_certificate': 2, 'fullscreen': 2, 
+                            'mouselock': 2, 'mixed_script': 2, 'media_stream': 2, 
+                            'media_stream_mic': 2, 'media_stream_camera': 2, 'protocol_handlers': 2, 
+                            'ppapi_broker': 2, 'automatic_downloads': 2, 'midi_sysex': 2, 
+                            'push_messaging': 2, 'ssl_cert_decisions': 2, 'metro_switch_to_desktop': 2, 
+                            'protected_media_identifier': 2, 'app_banner': 2, 'site_engagement': 2, 
+                            'durable_storage': 2}}
+options.add_experimental_option('prefs', prefs)
 url = "https://gridreferencefinder.com/"
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
@@ -35,16 +48,19 @@ def get_grid_reference(postcode, row_counter, driver):
     post_code_input.clear()
     post_code_input.send_keys(postcode)
     driver.find_element(By.ID, "find1").click()
-
+    # getting the grid reference
     data_table = driver.find_element(By.ID, "tbl")
     try:
         element_present = EC.presence_of_element_located((By.ID, f"row{row_counter}"))
         WebDriverWait(driver, timeout).until(element_present)
+        grid_row = data_table.find_element(By.ID, f"row{row_counter}")
+        grid_input_value = grid_row.find_element(By.TAG_NAME, "input")
     except TimeoutException:
-        print("Timed out waiting for page to load")
-    grid_row = data_table.find_element(By.ID, f"row{row_counter}")
-    grid_input_value = grid_row.find_element(By.TAG_NAME, "input")
-    print(yellow.bold('----------------------------------'))
+        grid_input_value = "No data found for this postcode"
+        # print("Timed out waiting for page to load")
+    # except Exception as e:
+    #     print(e)    
+    # finally
     print('Grid Reference: ' + red.bold(grid_input_value.get_attribute("value")))
     print(yellow.bold('----------------------------------'))
     
