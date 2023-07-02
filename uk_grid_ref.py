@@ -2,7 +2,7 @@
 # python3 uk_grid_ref.py "postcode"
 # run chmod +x uk_grid_ref.py to make the file executable
 # then run ./uk_grid_ref.py "postcode", example: ./uk_grid_ref.py NW103JD
-
+import asyncio
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
@@ -42,7 +42,7 @@ driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install())
 driver.get(url)
 
 
-def get_grid_reference(postcode, row_counter, driver):
+async def get_grid_reference(postcode, row_counter, driver):
     # sending keys to the input
     post_code_input = driver.find_element(By.ID, "txtPostcode")
     post_code_input.clear()
@@ -54,14 +54,14 @@ def get_grid_reference(postcode, row_counter, driver):
         element_present = EC.presence_of_element_located((By.ID, f"row{row_counter}"))
         WebDriverWait(driver, timeout).until(element_present)
         grid_row = data_table.find_element(By.ID, f"row{row_counter}")
-        grid_input_value = grid_row.find_element(By.TAG_NAME, "input")
+        grid_input_value = grid_row.find_element(By.TAG_NAME, "input").get_attribute("value")
     except TimeoutException:
         grid_input_value = "No data found for this postcode"
         # print("Timed out waiting for page to load")
     # except Exception as e:
     #     print(e)    
     # finally
-    print('Grid Reference: ' + red.bold(grid_input_value.get_attribute("value")))
+    print('Grid Reference: ' + red.bold(grid_input_value))
     print(yellow.bold('----------------------------------'))
     
 
@@ -71,7 +71,7 @@ row_counter = 1
 for arg in argv:
     if arg != argv[0]:
         print(yellow.bold(row_counter) + " " + 'Postcode: ' + arg)
-        get_grid_reference(arg, row_counter, driver)
+        asyncio.run(get_grid_reference(arg, row_counter, driver))
         row_counter += 1
 
 print(green.bold("Done!"))
