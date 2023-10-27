@@ -46,3 +46,4 @@ env
 # bin/
 # include/
 
+*.pyc
